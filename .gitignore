@@ -1,0 +1,6 @@
+.*
+!/web/.htaccess
+!/.gitignore
+config/app.ini
+fabfile.py
+fabfile.pyc
