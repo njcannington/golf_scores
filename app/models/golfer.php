@@ -3,66 +3,92 @@ namespace App\Models;
 
 class Golfer
 {
-    protected $id;
+
     protected $name;
-    protected $round = [];
-    protected $total;
     protected $thru;
+    protected $rounds;
+    protected $team;
+    protected $tournament;
 
-    public function __construct($golfer = [])
+    public function __construct($name, $rounds, $thru, $tournament)
     {
-        $this->name = key($golfer);
-        $this->id = $golfer[$this->name];
+        $this->tournament = $tournament;
+        $this->name = $name;
+        $this->thru = $thru;
+        $this->rounds = $rounds;
     }
 
-    public function setFourRounds($leaderboard, $par)
+
+    protected function addCutScores()
     {
-        for ($round = 1; $round <5; $round++) {
-            if ($round == 1) {
-                $this->setCurrent($leaderboard);
-            } else {
-                $this->setRound($round, $leaderboard, $par);
-            }
-        }
+        $rounds_max = $this->tournament->getRoundsMax();
+        $this->addCurrent($rounds_max["current"]);
+        $this->addRound1($this->rounds[1]);
+        $this->addRound2($this->rounds[2]);
+        $this->addRound3($rounds_max[3]);
+        $this->addRound4($rounds_max[4]);
     }
 
-    public function setRound($round, $leaderboard, $par)
+    protected function isNotPlaying()
     {
-        $score = $leaderboard->extractRound($round, $this->id);
-        if (is_int($score)) {
-            $this->round[$round] = $par - $score;
-        } else {
-            $this->round[$round] = "-";
-        }
+
+        return in_array($this->thru, ["CUT", "MDF", "WD"]);
     }
 
-    public function setThru($leaderboard)
+
+    protected function addRound1($round1)
     {
-        $this->thru = $leaderboard->extractThru($this->id);
+        $this->rounds[1] = $round1;
     }
 
-    public function setCurrent($leaderboard)
+    protected function addRound2($round2)
     {
-        $this->round[1] = $leaderboard->extractCurrent($this->id);
+        $this->rounds[2] = $round2;
     }
 
-    public function setTotal()
+    protected function addRound3($round3)
     {
-        $this->total = array_sum($this->round);
+        $this->rounds[3] = $round3;
     }
 
-    protected function getCutScore($leaderboard)
+    protected function addRound4($round4)
     {
-        $total = $this->round[1] + $this->round[2];
-        $total = $total + $leaderboard->extractHighestScore(3);
-        $total = $total + $leaderboard->extractHighestScore(4);
-
-        return $total;
+        $this->rounds[4] = $round4;
     }
 
-    public function getTotal()
+    protected function addCurrent($current)
     {
-        return $this->total;
+        $this->rounds["current"] = $current;
+    }
+
+    protected function hasTeam()
+    {
+        return(!is_null($this->team));
+    }
+
+    public function getCurrent()
+    {
+        return $this->rounds["current"];
+    }
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function getRounds()
+    {
+        $current_round =  $this->tournament->getCurrentRound();
+        $rounds = $this->rounds;
+        $rounds[$current_round] = $this->rounds["current"];
+        unset($rounds["current"]);
+        
+        return $rounds;
+    }
+
+    public function getTeam()
+    {
+        return $this->team;
     }
 
     public function getThru()
@@ -70,13 +96,24 @@ class Golfer
         return $this->thru;
     }
 
-    public function getRounds()
+    public function getTotal()
     {
-        return $this->round;
+        $current_round = $this->tournament->getCurrentRound();
+        $rounds = $this->rounds;
+        unset($rounds[$current_round]);
+
+        return array_sum($rounds);
     }
 
-    public function getName()
+    public function addTeam($team)
     {
-        return $this->name;
+        $this->team = $team;
+    }
+
+    public function updateScore()
+    {
+        if ($this->isNotPlaying()) {
+            $this->addCutScores();
+        }
     }
 }

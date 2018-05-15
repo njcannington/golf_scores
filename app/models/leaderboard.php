@@ -1,96 +1,173 @@
 <?php
 namespace App\Models;
 
+use App\Models\Golfer;
+
 class Leaderboard
 {
-    const JT = "-4848";
-    const HIDEKI = "-5860";
-    const ROSE = "-569";
-    const KUCH = "-257";
-    const ADAM = "-388";
-    const BERG = "-9025";
-    const RORY = "-3470";
-    const TIGER = "-462";
-    const SERG = "-158";
-    const RAHM = "-9780";
-    const REED = "-5579";
-    const KISNER = "-2552";
-    const JORDAN = "-5467";
-    const FOWLER = "-3702";
-    const DAY = "-1680";
-    const PHIL = "-308";
-    const STENSON = "-576";
-    const BRYSON = "-10046";
-    const DJ = "-3448";
-    const ZJ = "-686";
-    const CASEY = "-72";
-    const BUBBA = "-780";
-    const NOREN = "-3832";
-    const FLEETWOOD = "-5539";
-    const HARMAN = "-1225";
-    const FRANKIE = "-1483";
-    const OOST = "-1293";
-    const STANLEY = "-1778";
-    const LEADERBOARD = "http://www.espn.com/golf/leaderboard";
-
     protected $data;
+    protected $tournament;
 
-    public function __construct()
+    public function __construct($url, $tournament)
     {
-        $html = HTML::curlThis(self::LEADERBOARD);
+        $this->tournament = $tournament;
+        $html = HTML::curlThis($url);
         $this->data = new DOMScraper($html);
     }
 
-    public function extractThru($id)
+    public function extractTournamentPar()
     {
-        $score = "//tbody[contains(@id,'{$id}')]/tr/td[contains(@class, 'thru')]";
+        $par_path = "//li[2]/div[@class='course-detail']/div[@class='type'][1]";
+        $par_string = $this->data->getTextContent($par_path)[0];
 
-        return $this->data->getTextContent($score)[0];
+        return intval(substr($par_string, -2));
     }
 
-    public function extractCurrent($id)
+    public function extractTournamentName()
     {
-        $score = "//tbody[contains(@id,'{$id}')]/tr/td[contains(@class, 'current')]";
-
-        return $this->data->getTextContent($score)[0];
+        $name_path = "//header/div/div/h1";
+        return $this->data->getTextContent($name_path)[0];
     }
 
-    public function extractRound($round, $id)
+    public function extractGolfers()
     {
-        $score = "//tbody[contains(@id,'{$id}')]/tr/td[contains(@class, 'round{$round}')]";
+        $golfers = [];
+        foreach ($this->extractGolferRows() as $golfer_data) {
+            $name = $this->extractGolferName($golfer_data);
+            $rounds = $this->extractGolferRounds($golfer_data);
+            $thru = $this->extractThru($golfer_data);
 
-        return $this->data->getTextContent($score)[0];
-    }
-
-    public function extractHighestScore($round)
-    {
-        $score = "//tbody/tr/td[contains(@class, 'round{$round}')]";
-        $max = max($this->data->getTextContent($score));
-        switch ($max) {
-            case '--':
-                $max = 0;
-                break;
-
-            default:
-                $max = int($max);
-                break;
+            $golfers[$name] = new Golfer($name, $rounds, $thru, $this->tournament);
         }
-        return $max;
+
+        return $golfers;
     }
 
-    public function extractHighestCurrent()
+    public function extractRoundsMax()
     {
-        $score = "//tbody/tr/td[contains(@class, 'current')]";
-        $max = max($this->data->getTextContent($score));
-        switch ($max) {
-            case '--':
-                $max = 0;
-                break;
-
-            default:
-                $max = int($max);
-                break;
+        $max_rounds = [];
+        foreach ($this->extractGolferRows() as $golfer_data) {
+            $rounds = $this->extractGolferRounds($golfer_data);
+            $max_rounds["current"][] = $rounds["current"];
+            $max_rounds[1][] = $rounds[1];
+            $max_rounds[2][] = $rounds[2];
+            $max_rounds[3][] = $rounds[3];
+            $max_rounds[4][] = $rounds[4];
         }
-        return $max;
+
+        $max_rounds["current"] = max($max_rounds["current"]);
+        $max_rounds[1] = max($max_rounds[1]);
+        $max_rounds[2] = max($max_rounds[2]);
+        $max_rounds[3] = max($max_rounds[3]);
+        $max_rounds[4] = max($max_rounds[4]);
+
+        return $max_rounds;
     }
+
+
+    /*
+    * methods used to extract the individual golfer data from the table
+    *
+    */
+
+    protected function extractGolferTable()
+    {
+        $golfer_path = "//tbody/tr[contains(@class,'player-overview')]";
+        return $this->data->getElements($golfer_path);
+    }
+
+    protected function extractGolferRows()
+    {
+        $golfers = [];
+        foreach ($this->extractGolferTable() as $golfer_element) {
+            $golfers[] = $golfer_element->childNodes;
+        }
+        return $golfers;
+    }
+
+    protected function extractGolferName($golfer_data)
+    {
+        $name_data = $golfer_data[2]->childNodes;
+        return $name_data[1]->textContent;
+    }
+
+    protected function extractGolferRounds($golfer_data)
+    {
+        $rounds = [];
+        $rounds["current"] = intval($golfer_data[4]->textContent);
+        $rounds[1] = intval($golfer_data[6]->textContent) - $this->tournament->getPar();
+        $rounds[2] = intval($golfer_data[7]->textContent) - $this->tournament->getPar();
+        $rounds[3] = intval($golfer_data[8]->textContent) - $this->tournament->getPar();
+        $rounds[4] = intval($golfer_data[9]->textContent) - $this->tournament->getPar();
+
+        return $rounds;
+    }
+
+    protected function extractThru($golfer_data)
+    {
+        return $golfer_data[5]->textContent;
+    }
+
+
+
+
+
+    public function __destruct()
+    {
+        $this->data = '';
+    }
+
+    // protected function getGolfers()
+    // {
+    //     $golfers = "//tbody/tr/td[contains(@class,'playerName')]/a[@class='full-name']";
+    //     return $this->data->getTextContent($golfers);
+    // }
+    //
+    // protected function
+    //
+    // public function extractThru($id)
+    // {
+    //     $score = "//tbody[contains(@id,'{$id}')]/tr/td[contains(@class, 'thru')]";
+    //
+    //     return $this->data->getTextContent($score)[0];
+    // }
+    //
+    // public function extractCurrent($id)
+    // {
+    //     $score = "//tbody[contains(@id,'{$id}')]/tr/td[contains(@class, 'current')]";
+    //
+    //     return $this->data->getTextContent($score)[0];
+    // }
+    //
+    // public function extractRound($round, $id)
+    // {
+    //     $score = "//tbody[contains(@id,'{$id}')]/tr/td[contains(@class, 'round{$round}')]";
+    //
+    //     return $this->data->getTextContent($score)[0];
+    // }
+    //
+    // public function extractHighestScore($round)
+    // {
+    //     $score = "//tbody/tr/td[contains(@class, 'round{$round}')]";
+    //     $max = max($this->data->getTextContent($score));
+    //
+    //     return $max;
+    // }
+    //
+    // public function extractHighestCurrent()
+    // {
+    //     $scores = $this->getAllCurrentScores();
+    //     $scores = array_replace($scores, array_fill_keys(array_keys($scores, "E"), 0));
+    //     $scores = array_replace($scores, array_fill_keys(array_keys($scores, "-"), 0));
+    //     $max = max($scores);
+    //     return $max;
+    // }
+    //
+
+    //
+    // protected function getAllRoundScores($round)
+    // {
+    //     $score = "//tbody/tr/td[contains(@class, 'round{$round}')]";
+    //     return $this->data->getTextContent($score);
+    // }
 }
