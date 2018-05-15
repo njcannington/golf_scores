@@ -3,6 +3,7 @@ namespace App\Models;
 
 use DomDocument;
 use DOMXPath;
+use Exception;
 
 /**
 * scraper class using DOMXPath
@@ -55,4 +56,5 @@ class DOMScraper
             return $this->DOMXPath->query($xpath);
         }
     }
+
 }
