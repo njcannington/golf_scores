@@ -20,8 +20,7 @@ class DOMScraper
     {
         $dom = new DomDocument();
         libxml_use_internal_errors(true); //
-        @$dom->loadHTML($html);
-
+        $dom->loadHTML($html);
         $this->DOMXPath = new DOMXPath($dom);
     }
 

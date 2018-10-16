@@ -80,9 +80,10 @@ class Golfer
     {
         $current_round =  $this->tournament->getCurrentRound();
         $rounds = $this->rounds;
-        $rounds[$current_round] = $this->rounds["current"];
+        if ($current_round !== "n/a") {
+            $rounds[$current_round] = $this->rounds["current"];
+        }
         unset($rounds["current"]);
-        
         return $rounds;
     }
 
@@ -98,9 +99,8 @@ class Golfer
 
     public function getTotal()
     {
-        $current_round = $this->tournament->getCurrentRound();
-        $rounds = $this->rounds;
-        unset($rounds[$current_round]);
+
+        $rounds = $this->getRounds();
 
         return array_sum($rounds);
     }
