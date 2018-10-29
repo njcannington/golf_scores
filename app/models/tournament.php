@@ -1,71 +1,43 @@
 <?php
 namespace App\Models;
 
-use App\Models\Leaderboard;
+use Lib\Db\Db;
+use Lib\Db\Model;
 use App\Models\Team;
 
-class Tournament
+class Tournament extends Model
 {
-    protected $name;
-    protected $par;
-    protected $teams = [];
-    protected $golfers = [];
-    protected $current_round;
-    protected $current_max;
-    protected $rounds_max = [];
+    public $name;
+    public $url;
+    protected $leaderboard;
 
-    public function __construct($url)
+    public function __construct()
     {
-        $leaderboard = new Leaderboard($url, $this);
-        $this->name = $leaderboard->extractTournamentName();
-        $this->par = $leaderboard->extractTournamentPar();
-        $this->rounds_max = $leaderboard->extractRoundsMax();
-        $this->golfers = $leaderboard->extractGolfers();
-        // $this->current_round = $leaderboard->setCurrentRound();
+        parent::__construct();
+        $this->table = "tournaments";
+        $this->columns = ["url","name"];
     }
 
-    public function addTeam($team)
+    // GET PROPERTIES
+    public function getLeaderboard()
     {
-        $this->teams[$team] = new Team($team, $this);
+        return $this->leaderboard;
     }
 
-    public function getGolfer($golfer)
+    // OTHER METHODS
+
+    public function addTeam($team_name)
     {
-        return $this->golfers[$golfer];
+        $team = new Team();
+        $team->addName($team_name);
+        $team->addTournament($this->id);
+        $team->save();
     }
 
-    public function getTeams()
+    public function create($url)
     {
-        return $this->teams;
-    }
-
-    public function getTeam($name)
-    {
-        return $this->teams[$name];
-    }
-
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    public function getPar()
-    {
-        return $this->par;
-    }
-
-    public function getCurrentRound()
-    {
-        return $this->current_round;
-    }
-
-    public function getCurrentMax()
-    {
-        return $this->current_max;
-    }
-
-    public function getRoundsMax()
-    {
-        return $this->rounds_max;
+        $this->url = $url;
+        $this->leaderboard = new Leaderboard($url);
+        $this->name = $this->leaderboard->getName();
     }
 }

@@ -56,4 +56,26 @@ class DOMScraper
         }
     }
 
+    public function tableToArray($xpath)
+    {
+        $rows = $this->extractTRs($xpath);
+        return $rows;
+    }
+
+    protected function extractTRs($xpath)
+    {   
+        foreach ($this->getElements($xpath) as $TR) {
+            $rows[] = $this->extractTDs($TR);
+        }
+        return $rows;
+    }
+
+    protected function extractTDs($TR)
+    {
+        foreach ($TR->childNodes as $TD) {
+            $row[] = $TD->textContent;
+        }
+        return $row;
+    }
+
 }
