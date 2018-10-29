@@ -1,1 +1,41 @@
-<?=$data["tournament"]->name?>
+<h2><?= $data["tournament"]->name ?></h2>
+<table class="table table-hover table-responsive">
+    <thead>
+        <tr>
+            <td></td>
+            <td><p class="text-right">Thru</p></td>
+            <td><p class="text-right">Round 1</p></td>
+            <td><p class="text-right">Round 2</p></td>
+            <td><p class="text-right">Round 3</p></td>
+            <td><p class="text-right">Round 4</p></td>
+            <td><p class="text-right">Total</p></td>
+        </tr>
+    </thead>
+    <?php foreach ($data["tournament"]->getTeams() as $team): ?>
+    <?php $team->setScore($data["leaderboard"]); ?>
+        <tbody>
+            <tr class="success">
+                <td><?= $team->name ?> (<?= $team->getTotal() ?>)</td>
+                <td></td
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <?php foreach ($team->getGolfers() as $golfer): ?>
+            <?php $golfer->setScore($data["leaderboard"]); ?>
+            <tr>
+                <td><p class="text-left"><?= $golfer->name ?></p></td>
+                <td><p class="text-right"><?= $golfer->getThru(); ?></p></td>
+                <td><p class="text-right"><?= $golfer->getRound(1); ?></p></td>
+                <td><p class="text-right"><?= $golfer->getRound(2); ?></p></td>
+                <td><p class="text-right"><?= $golfer->getRound(3); ?></p></td>
+                <td><p class="text-right"><?= $golfer->getRound(4); ?></p></td>
+                <td><p class="text-right"><?= $golfer->getTotal() ?></p></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    <?php endforeach; ?>
+</table>

@@ -10,6 +10,6 @@ use App\Models\Team;
 use App\Models\Golfer;
 
 
-$tournament = Tournament::findOne(["name" => "The Open"]);
-$team = Team::findOne(["name" => "Golfer_1", "tournament_id" => $tournament->id]);
-$team->addGolfer("Tiger Woods");
+$golfer = Golfer::findOne(["tournament_id" => 2, "name" => "Jordan Spieth"]);
+$score = $golfer->getScore();
+echo $score->getRound(1);

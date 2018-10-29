@@ -8,6 +8,7 @@ class Team extends Model
 {
     public $name = null;
     public $tournament_id = null;
+    protected $leaderboard;
 
     public function __construct()
     {
@@ -36,8 +37,27 @@ class Team extends Model
         $golfer->save();
     }
 
+
+    // GET PROPERTIES
     public function getGolfers()
     {
         return Golfer::findAll(["team_id" => $this->id, "tournament_id" => $this->tournament_id]);
+    }
+
+    public function setScore($leaderboard)
+    {
+        $this->leaderboard = $leaderboard;
+    }
+
+    public function getTotal()
+    {
+        $golfers = $this->getGolfers();
+        $total = [];
+        foreach ($golfers as $golfer) {
+            $golfer->setScore($this->leaderboard);
+            $total[] = $golfer->getTotal();
+        }
+        sort($total);
+        return $total[0] + $total[1] + $total[2] + $total[3];
     }
 }

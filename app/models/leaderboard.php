@@ -8,7 +8,7 @@ class Leaderboard extends Model
 {
     protected $name;
     protected $par;
-    protected $scores;
+    protected $scores = [];
 
     public function __construct($url)
     {
@@ -35,11 +35,23 @@ class Leaderboard extends Model
     protected function setScores($dom)
     {
         $path = "//tbody[@class='Table2__tbody']/tr";
-        $this->scores = $dom->tableToArray($path);
+        foreach ($dom->tableToArray($path) as $scores) {
+            $score = new Score($scores);
+            $this->scores[$score->getGolfer()] = $score;
+        }
     }
 
 
     // GET PROPERTIES
+    public function getRoundMax($i)
+    {
+        $all_scores = [];
+        foreach ($this->scores as $score) {
+            $all_scores[] = $score->getRound($i);
+        }
+        return max($all_scores);
+    }
+
     public function getName()
     {
         return $this->name;
@@ -51,8 +63,8 @@ class Leaderboard extends Model
         return $this->par;
     }
 
-    public function getScores()
+    public function getGolfer($golfer)
     {
-        return $this->scores;
+        return $this->scores[$golfer->name];
     }
 }

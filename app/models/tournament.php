@@ -9,7 +9,6 @@ class Tournament extends Model
 {
     public $name;
     public $url;
-    protected $leaderboard;
 
     public function __construct()
     {
@@ -18,10 +17,9 @@ class Tournament extends Model
         $this->columns = ["url","name"];
     }
 
-    // GET PROPERTIES
-    public function getLeaderboard()
+    public function getTeams()
     {
-        return $this->leaderboard;
+        return Team::findAll(["tournament_id" => $this->id]);
     }
 
     // OTHER METHODS

@@ -4,6 +4,7 @@ namespace App\Controllers;
 use Lib\Config\Config;
 use App\Models\Tournament;
 use App\Models\Team;
+use App\Models\Leaderboard;
 
 class IndexController
 {
@@ -55,7 +56,8 @@ class IndexController
     public function tournamentAction()
     {
         $tournament = Tournament::findOne(["id" => $_GET["id"]]);
-        return compact("tournament");
+        $leaderboard = new leaderboard($tournament->url);
+        return compact("tournament", "leaderboard");
     }
 
     public function addTournament($url)

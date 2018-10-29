@@ -9,8 +9,6 @@ use App\Models\Leaderboard;
 use App\Models\Tournament;
 
 
-$url = "http://www.espn.com/golf/leaderboard/_/tournamentId/401025259";
-$leaderboard = new Leaderboard($url);
-echo $leaderboard->getName()."\n";
-echo $leaderboard->getPar()."\n";
-// print_r($leaderboard->getGolferData("Jon Rahm"));
+$tournament = Tournament::findOne(["name" => "2018 Masters Tournament"]);
+$leaderboard = new leaderboard($tournament->url);
+echo $leaderboard->getRoundMax(1);
