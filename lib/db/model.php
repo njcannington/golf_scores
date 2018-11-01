@@ -45,6 +45,12 @@ class Model
         $this->findOne([$this->columns[0] => $this->{$this->columns[0]}]);
     }
 
+    public function remove()
+    {
+        $sql = 'DELETE FROM '.$this->table.' WHERE id="'.$this->id.'"';
+        $this->db->query($sql);
+    }
+
     // protected functions
     protected function isComplete()
     {

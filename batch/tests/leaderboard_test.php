@@ -11,4 +11,7 @@ use App\Models\Tournament;
 
 $tournament = Tournament::findOne(["name" => "2018 Masters Tournament"]);
 $leaderboard = new leaderboard($tournament->url);
-echo $leaderboard->getRoundMax(1);
+foreach ($leaderboard->getGolferNames() as $golfer_names)
+{
+    echo $golfer_names."\n";
+}

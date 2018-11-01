@@ -5,6 +5,7 @@ use Lib\Config\Config;
 use App\Models\Tournament;
 use App\Models\Team;
 use App\Models\Leaderboard;
+use App\Models\Golfer;
 
 class IndexController
 {
@@ -29,27 +30,42 @@ class IndexController
             $_SESSION["admin"] = true;
         }
 
+        //ADD TOURNAMENT
         if (isset($_POST["tournament_url"])) {
             $this->addTournament($_POST["tournament_url"]);
         }
 
+        //ADD TEAM
         if (isset($_POST["team_name"])) {
             $tournament = Tournament::findOne(["id" => $_POST["tournament_id"]]);
             $tournament->addTeam($_POST["team_name"]);
         }
 
+        //ADD GOLFER
+        if (isset($_POST["team_id"])) {
+            $team = Team::findOne(["id" => $_POST["team_id"]]);
+            $team->addGolfer($_POST["golfer_name"]);
+            $tournament = Tournament::findOne(["id" => $team->tournament_id]);
+            $teams = $tournament->getTeams();
+            $leaderboard = new leaderboard($tournament->url);
+            return compact("teams", "tournament","leaderboard");
+        }
+
+        //REMOVE GOLFER
+        if (isset($_POST["golfer_id"])) {
+            $golfer = Golfer::findOne(["id" => $_POST["golfer_id"]]);
+            $tournament = Tournament::findOne(["id" => $golfer->tournament_id]);
+            $teams = $tournament->getTeams();
+            $leaderboard = new leaderboard($tournament->url);
+            $golfer->remove();
+            return compact("teams", "tournament","leaderboard");
+        }
+
         if (isset($_POST["tournament_id"])) {
             $teams = $this->getTeams($_POST["tournament_id"]);
             $tournament = Tournament::findOne(["id" => $_POST["tournament_id"]]);
-            return compact("teams", "tournament");
-        }
-
-        if (isset($_POST["team_id"])) {
-            $team = Team::findOne(["id" => $_POST["team_id"]]);
-            $team->addGolfer($_POST["golfer"]);
-            $teams = $this->getTeams($team->tournament_id);
-            $tournament = Tournament::findOne(["id" => $team->tournament_id]);
-            return compact("teams", "tournament");
+            $leaderboard = new leaderboard($tournament->url);
+            return compact("teams", "tournament", "leaderboard");
         }
     }
 

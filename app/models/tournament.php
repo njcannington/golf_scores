@@ -22,6 +22,11 @@ class Tournament extends Model
         return Team::findAll(["tournament_id" => $this->id]);
     }
 
+    public function getGolfers()
+    {
+        return Golfer::findAll(["tournament_id" => $this->id]);
+    }
+
     // OTHER METHODS
 
     public function addTeam($team_name)

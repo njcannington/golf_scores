@@ -40,6 +40,11 @@ class Golfer extends Model
         $this->leaderboard = $leaderboard;
     }
 
+    public function getTeam()
+    {
+        return Team::findOne(["id" => $this->team_id]);
+    }
+
     public function getRound($i)
     {
         if ($i > 2 && $this->isNotPlaying()) {

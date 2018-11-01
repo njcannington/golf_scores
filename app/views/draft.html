@@ -1,8 +1,8 @@
+<!-- ASK FOR PASSWORD -->
+<?php if ($data["auth"] == false): ?>
+<div class="row">
 <div class="col-md-6 col-md-offset-3 text-center">
 
-
-<?php if ($data["auth"] == false): ?>
-    
 <form  class="form-inline" action="#"" method="post">
     <div class="form-group">
         <label for="pass">Password:</label>
@@ -10,8 +10,15 @@
     </div>
   <button type="submit" class="btn btn-default">Submit</button>
 </form>
+</div>
+</div>
+
+
 
 <?php else: ?>
+<!-- ALLOW FOR DRAFTING -->
+<div class="row">
+<div class="col-md-6 col-md-offset-3 text-center">
 <h4>Draft Teams</h4>
 <form  class="form-inline" action="#"" method="post">
     <div class="form-group">
@@ -24,61 +31,140 @@
     </div>
     <button type="submit" class="btn btn-default">Get Teams</button>
 </form>
+</div>
+</div>
+</br>
+<?php endif; ?>
+
+
 
 <?php if(isset($data["teams"])): ?>
-    <h4><?= $data["tournament"]->name ?></h4>
-    <?php foreach($data["teams"] as $team): ?>
-    <?= $team->name ?>:</br>
-    <?php if(empty($team->getGolfers())): ?>
-    No Golfers
-    <?php endif; ?>
-    <ul class="list-group">
-        <?php foreach($team->getGolfers() as $golfer): ?>
-        <li class="list-group-item"><?= $golfer->name ?></li>
-        <?php endforeach; ?>
-    </ul>
-    <form  class="form-inline" action="#"" method="post">
-        <div class="form-group">
-            <input type="text" class="form-control" name="golfer" placeholder="Golfer's Name">
-            <input type="hidden" class="form-control" name="team_id" value="<?= $team->id ?>">
+<div class="row">
+    <h4 class="text-center"><?= $data["tournament"]->name ?></h4>
+
+    <!-- LEFT PANEL -->
+    <!-- DISPLAY TEAM INFO HERE -->
+    <div class="col-md-3 col-md-offset-3">
+        <div class="panel panel-default">
+            <div class="panel-heading text-center">Current Teams:</div>
+            <div class="panel-body">
+            <?php foreach($data["teams"] as $team): ?>
+            <ul class="list-unstyled">
+                <li><strong><?= $team->name ?>:</strong></li>
+
+                <?php if(empty($team->getGolfers())): ?>
+                <li>No Golfers</li>
+                <?php endif; ?>
+
+                <?php foreach($team->getGolfers() as $golfer): ?>
+                <li class="text-center"><?= $golfer->name ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <?php endforeach; ?>
+
+            <?php if(empty($data["teams"])): ?>
+            <div class="panel-body">No Teams</div>
+            <?php endif; ?>
+            </div>
         </div>
-      <button type="submit" class="btn btn-default">Draft</button>
-    </form>
+    </div>
 
-    <hr>
-    <?php endforeach; ?>
 
-    <?php if(empty($data["teams"])): ?>
-    No Teams
-    <?php endif; ?>
+
+    <!-- RIGHT PANEL -->
+    <div class="col-md-3">
+    <!-- DRAFT TEAM HERE -->
+    <div class="panel panel-default">
+        <div class="panel-heading text-center">Draft a Golfer</div>
+            <div class="panel-body">
+                <form  class="form" action="#"" method="post">
+                    <div class="form-group">
+                    <select class="form-control" name="team_id">
+                        <option value="" selected disabled hidden>Select a Team:</option>
+                        <?php foreach($data["teams"] as $team): ?>
+                        <option value="<?=$team->id?>"><?=$team->name?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    </div>
+                    <div class="form-group">
+                    <select class="form-control" name="golfer_name">
+                        <option value="" selected disabled hidden>Select a Golfer:</option>
+                        <?php foreach($data["leaderboard"]->getGolferNames() as $golfer_name): ?>
+                        <option value="<?=$golfer_name?>"><?=$golfer_name?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    </div>
+                    <input type="hidden" class="form-control" name="tournament_id" value="<?=$team->tournament_id?>">
+                  <button type="submit" class="btn btn-default">Add</button>
+                </form>
+            </div>
+    </div>
+    <!-- EDIT TEAM HERE -->
+    <div class="panel panel-default">
+        <div class="panel-heading text-center">Remove a Golfer</div>
+            <div class="panel-body">
+                <form  class="form" action="#"" method="post">
+                    <div class="form-group">
+                    <select class="form-control" name="golfer_id">
+                        <option value="" selected disabled hidden>Select a Golfer:</option>
+                        <?php foreach($data["tournament"]->getGolfers() as $golfer): ?>
+                        <option value="<?=$golfer->id?>"><?=$golfer->name?> - <?=$golfer->getTeam()->name?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    </div>
+                  <button type="submit" class="btn btn-default">Remove</button>
+                </form>
+            </div>
+    </div>
+    </div>
+</div>
 <?php endif; ?>
 
-<?php endif; ?>
+
+
+
 
 <?php if ($data["admin"] == true): ?>
-<hr>
-<h3>Admin Panel</h3>
-<h4>Add Team</h4>
-<form  class="form-inline" action="#"" method="post">
-    <div class="form-group">
-    <select class="form-control" name="tournament_id">
-        <option value="" selected disabled hidden>Select Tournament:</option>
-        <?php foreach(App\Models\Tournament::findAll() as $tournament): ?>
-        <option value="<?=$tournament->id?>"><?=$tournament->name?></option>
-        <?php endforeach; ?>
-    </select>
-    <div class="form-group">
-        <input type="text" class="form-control" name="team_name" placeholder="Team's Name">
+<!-- ADD A TEAM -->
+<div class="row">
+<div class="col-md-6 col-md-offset-3 text-center">
+    <div class="panel panel-default">
+        <div class="panel-heading text-center">Add a Team</div>
+            <div class="panel-body">
+                <form  class="form-inline" action="#"" method="post">
+                    <div class="form-group">
+                    <select class="form-control" name="tournament_id">
+                        <option value="" selected disabled hidden>Select Tournament:</option>
+                        <?php foreach(App\Models\Tournament::findAll() as $tournament): ?>
+                        <option value="<?=$tournament->id?>"><?=$tournament->name?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="team_name" placeholder="Team's Name">
+                    </div>
+                  <button type="submit" class="btn btn-default">Add</button>
+                </form>
+            </div>
     </div>
-  <button type="submit" class="btn btn-default">Add</button>
-</form>
-<h4>Add Tournament</h4>
-<form  class="form-inline" action="#"" method="post">
-    <div class="form-group">
-        <input type="url" class="form-control" name="tournament_url" placeholder="Tournament URL">
+</div>
+</div>
+<!-- ADD A TOURNAMENT -->
+<div class="row">
+<div class="col-md-6 col-md-offset-3 text-center">
+    <div class="panel panel-default">
+        <div class="panel-heading text-center">Add a Tournament</div>
+            <div class="panel-body">
+                <form  class="form-inline" action="#"" method="post">
+                    <div class="form-group">
+                        <input type="url" class="form-control" name="tournament_url" placeholder="Tournament URL">
+                    </div>
+                  <button type="submit" class="btn btn-default">Add</button>
+                </form>
+            </div>
     </div>
-  <button type="submit" class="btn btn-default">Add</button>
-</form>
+</div>
+</div>
 
 <?php endif; ?>
 

@@ -10,6 +10,6 @@ use App\Models\Team;
 use App\Models\Golfer;
 
 
-$golfer = Golfer::findOne(["tournament_id" => 2, "name" => "Jordan Spieth"]);
-$score = $golfer->getScore();
-echo $score->getRound(1);
+$golfers = Golfer::findAll();
+$golfer = $golfers[0];
+$golfer->remove();

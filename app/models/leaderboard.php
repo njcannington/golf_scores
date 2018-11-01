@@ -67,4 +67,13 @@ class Leaderboard extends Model
     {
         return $this->scores[$golfer->name];
     }
+
+    public function getGolferNames()
+    {
+        $golfer_names = [];
+        foreach ($this->scores as $golfer_name => $scores) {
+            $golfer_names[] = $golfer_name;
+        }
+        return $golfer_names;
+    }
 }
